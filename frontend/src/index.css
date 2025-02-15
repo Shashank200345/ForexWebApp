@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-dark text-white;
+  }
+}
+
+.gradient-bg {
+  background: linear-gradient(135deg, rgba(19, 22, 28, 0.95) 0%, rgba(77, 77, 77, 0.95) 100%);
+  backdrop-filter: blur(10px);
+}
+
+.card-hover {
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(19, 22, 28, 0.4);
+}
+
+.neon-button {
+  background: #13161C;
+  color: #DFFF88;
+  border: 1px solid #DFFF88;
+  transition: all 0.3s ease;
+}
+
+.neon-button:hover {
+  background: #DFFF88;
+  color: #13161C;
+  box-shadow: 0 0 20px rgba(223, 255, 136, 0.2);
+}
+
+.blur-overlay {
+  backdrop-filter: blur(8px);
+  background: rgba(19, 22, 28, 0.9);
+}
