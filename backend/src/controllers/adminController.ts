@@ -1,15 +1,26 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import Admin from '../models/Admin';
+import Contact from '../models/Contact';
+import Registration from '../models/Registration';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-
+// Admin login
 export const login = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
+    console.log('Login attempt:', { username });
 
-    // Find admin by username
-    const admin = await Admin.findOne({ username });
+    if (!username || !password) {
+      console.log('Missing credentials');
+      return res.status(400).json({
+        success: false,
+        message: 'Username and password are required'
+      });
+    }
+
+    const admin = await Admin.findOne({ username: username.trim() });
+    console.log('Admin found:', !!admin);
+
     if (!admin) {
       return res.status(401).json({
         success: false,
@@ -17,8 +28,9 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    // Check password
-    const isMatch = await admin.comparePassword(password);
+    const isMatch = await admin.comparePassword(password.trim());
+    console.log('Password match:', isMatch);
+
     if (!isMatch) {
       return res.status(401).json({
         success: false,
@@ -26,51 +38,50 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
-    // Generate JWT token
     const token = jwt.sign(
-      { id: admin._id, username: admin.username },
-      JWT_SECRET,
-      { expiresIn: '24h' }
+      { id: admin._id },
+      process.env.JWT_SECRET || 'your-secret-key',
+      { expiresIn: '1d' }
     );
 
-    res.json({
+    console.log('Login successful for:', username);
+
+    return res.status(200).json({
       success: true,
       token,
       admin: {
         id: admin._id,
-        username: admin.username
+        username: admin.username,
+        role: admin.role
       }
     });
   } catch (error) {
-    console.error('Error in admin login:', error);
-    res.status(500).json({
+    console.error('Login error:', error);
+    return res.status(500).json({
       success: false,
-      message: 'Error during login',
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
+      message: 'Server error during login'
     });
   }
 };
 
-// Get dashboard statistics
-export const getDashboardStats = async (_req: Request, res: Response) => {
+// Get all contacts and registrations
+export const getDashboardData = async (req: Request, res: Response) => {
   try {
-    const registrationsCount = await Admin.countDocuments();
-    const contactsCount = await Admin.countDocuments();
+    const contacts = await Contact.find().sort({ createdAt: -1 });
+    const registrations = await Registration.find().sort({ createdAt: -1 });
     
+    console.log('Fetched registrations:', registrations); // Debug log
+
     res.json({
       success: true,
-      data: {
-        registrationsCount,
-        contactsCount,
-        recentActivity: [] // You can add recent activity data here
-      }
+      contacts,
+      registrations
     });
   } catch (error) {
-    console.error('Error getting dashboard stats:', error);
-    res.status(500).json({
+    console.error('Dashboard data error:', error);
+    res.status(500).json({ 
       success: false,
-      message: 'Error fetching dashboard statistics',
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
+      message: 'Server error' 
     });
   }
 }; 

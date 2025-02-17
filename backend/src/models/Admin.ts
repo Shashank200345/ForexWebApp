@@ -1,28 +1,26 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
-export interface IAdmin extends Document {
-  username: string;
-  password: string;
-  comparePassword(candidatePassword: string): Promise<boolean>;
-}
-
-const AdminSchema: Schema = new Schema({
+const adminSchema = new mongoose.Schema({
   username: {
     type: String,
-    required: [true, 'Username is required'],
+    required: true,
     unique: true,
     trim: true
   },
   password: {
     type: String,
-    required: [true, 'Password is required'],
-    minlength: [6, 'Password must be at least 6 characters long']
+    required: true
+  },
+  role: {
+    type: String,
+    enum: ['admin', 'superadmin'],
+    default: 'admin'
   }
 });
 
 // Hash password before saving
-AdminSchema.pre('save', async function(next) {
+adminSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   
   try {
@@ -34,9 +32,14 @@ AdminSchema.pre('save', async function(next) {
   }
 });
 
-// Method to compare password
-AdminSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
-  return bcrypt.compare(candidatePassword, this.password);
+// Compare password method
+adminSchema.methods.comparePassword = async function(candidatePassword: string) {
+  try {
+    return await bcrypt.compare(candidatePassword, this.password);
+  } catch (error) {
+    console.error('Password comparison error:', error);
+    return false;
+  }
 };
 
-export default mongoose.model<IAdmin>('Admin', AdminSchema); 
+export default mongoose.model('Admin', adminSchema); 

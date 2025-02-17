@@ -4,45 +4,39 @@ import Contact from '../models/Contact';
 
 export const createContact = async (req: Request, res: Response) => {
   try {
-    // Check for validation errors
+    console.log('Received contact data:', req.body);
+
+    // Validation
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Validation errors:', errors.array());
       return res.status(400).json({
         success: false,
         errors: errors.array()
       });
     }
 
-    const { name, email, phone, country, acceptedTerms } = req.body;
-
-    // Create new contact
-    const contact = new Contact({
-      name,
-      email,
-      phone,
-      country,
-      acceptedTerms
-    });
-
-    // Save contact to database
-    await contact.save();
+    // Create and save contact
+    const contact = new Contact(req.body);
+    const savedContact = await contact.save();
+    
+    console.log('Contact saved:', savedContact);
 
     res.status(201).json({
       success: true,
-      message: 'Contact request submitted successfully',
-      data: contact
+      message: 'Contact created successfully',
+      data: savedContact
     });
-  } catch (error) {
-    console.error('Error in createContact:', error);
+  } catch (error: any) {
+    console.error('Contact creation error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error submitting contact request',
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
+      message: error.message || 'Failed to create contact'
     });
   }
 };
 
-export const getContacts = async (_req: Request, res: Response) => {
+export const getContacts = async (req: Request, res: Response) => {
   try {
     const contacts = await Contact.find().sort({ createdAt: -1 });
     
@@ -51,11 +45,10 @@ export const getContacts = async (_req: Request, res: Response) => {
       data: contacts
     });
   } catch (error) {
-    console.error('Error in getContacts:', error);
+    console.error('Error fetching contacts:', error);
     res.status(500).json({
       success: false,
-      message: 'Error fetching contacts',
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
+      message: 'Failed to fetch contacts'
     });
   }
 }; 

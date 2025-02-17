@@ -62,7 +62,7 @@ function App() {
         path="/signal-pack/:id"
         element={<SignalPackDetails courses={courses} />}
       />
-      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/admin" element={<AdminLogin />} />
       <Route path="/admin/dashboard" element={<AdminDashboard />} />
     </Routes>
   );

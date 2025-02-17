@@ -1,15 +1,6 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose from 'mongoose';
 
-export interface IContact extends Document {
-  name: string;
-  email: string;
-  phone: string;
-  country: string;
-  acceptedTerms: boolean;
-  createdAt: Date;
-}
-
-const ContactSchema: Schema = new Schema({
+const contactSchema = new mongoose.Schema({
   name: {
     type: String,
     required: [true, 'Name is required'],
@@ -19,8 +10,7 @@ const ContactSchema: Schema = new Schema({
     type: String,
     required: [true, 'Email is required'],
     trim: true,
-    lowercase: true,
-    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+    lowercase: true
   },
   phone: {
     type: String,
@@ -40,6 +30,14 @@ const ContactSchema: Schema = new Schema({
     type: Date,
     default: Date.now
   }
+}, {
+  collection: 'contacts',
+  timestamps: true
 });
 
-export default mongoose.model<IContact>('Contact', ContactSchema); 
+contactSchema.pre('save', function(next) {
+  console.log('Saving contact:', this);
+  next();
+});
+
+export default mongoose.model('Contact', contactSchema); 

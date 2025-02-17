@@ -7,44 +7,52 @@ import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
 import contactRoutes from './routes/contactRoutes';
 import registrationRoutes from './routes/registrationRoutes';
-import adminRoutes from './routes/adminRoutes';
 import signalSubscriptionRoutes from './routes/signalSubscriptionRoutes';
-import { validationResult } from 'express-validator';
+import adminRoutes from './routes/adminRoutes';
+import path from 'path';
 
 // Load environment variables
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '../.env') });
+
+// Verify required environment variables
+if (!process.env.MONGODB_URI) {
+  console.error('MONGODB_URI is not defined in environment variables');
+  process.exit(1);
+}
 
 const app = express();
 
-// Security middleware
-app.use(helmet()); // Adds various HTTP headers for security
-app.use(mongoSanitize()); // Prevents MongoDB operator injection
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(helmet());
+app.use(mongoSanitize());
+
+// CORS configuration
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    'https://your-frontend-domain.com' // Add your frontend domain after deployment
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: Number(process.env.RATE_LIMIT_WINDOW) * 60 * 1000 || 15 * 60 * 1000, // 15 minutes
-  max: Number(process.env.RATE_LIMIT_MAX) || 100 // Limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100
 });
 app.use(limiter);
 
-// CORS configuration
-const corsOptions = {
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-  credentials: true,
-  optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
-app.use(express.json());
-
-// Validation error handler middleware
-app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      success: false,
-      errors: errors.array()
-    });
-  }
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log('Request:', {
+    method: req.method,
+    path: req.path,
+    body: req.body
+  });
   next();
 });
 
@@ -54,20 +62,38 @@ app.use('/api/registrations', registrationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/signal-subscriptions', signalSubscriptionRoutes);
 
-// MongoDB connection with retry logic
-const connectDB = async (retries = 5) => {
+// Add a test route to verify admin endpoint
+app.get('/api/admin/test', (req, res) => {
+  res.json({ message: 'Admin API is working' });
+});
+
+// Add error logging middleware
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`, {
+    body: req.body,
+    query: req.query
+  });
+  next();
+});
+
+// Test route
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'API is working' });
+});
+
+// MongoDB connection
+const connectDB = async () => {
   try {
-    const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/forex_landing';
-    await mongoose.connect(MONGODB_URI);
-    console.log('Connected to MongoDB successfully');
+    const uri = process.env.MONGODB_URI;
+    if (!uri) {
+      throw new Error('MONGODB_URI is not defined');
+    }
+    console.log('Attempting to connect to MongoDB...');
+    await mongoose.connect(uri);
+    console.log('Connected to MongoDB:', mongoose.connection.name);
   } catch (error) {
     console.error('MongoDB connection error:', error);
-    if (retries > 0) {
-      console.log(`Retrying connection... (${retries} attempts remaining)`);
-      setTimeout(() => connectDB(retries - 1), 5000);
-    } else {
-      process.exit(1);
-    }
+    process.exit(1);
   }
 };
 
@@ -76,11 +102,10 @@ connectDB();
 
 // Error handling middleware
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
+  console.error('Error:', err);
   res.status(500).json({
     success: false,
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
+    message: 'Something went wrong!'
   });
 });
 

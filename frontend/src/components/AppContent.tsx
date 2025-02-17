@@ -867,6 +867,8 @@ const AppContent: React.FC<AppContentProps> = ({
                 <li>
                   <a href="#" className="text-[#8A95A3] hover:text-[#DFFF88] transition-colors">Market Analysis</a>
                 </li>
+                <Link to="/admin" className="admin-link" style={{ opacity: 0.5 }}>Admin
+                </Link>
               </ul>
             </div>
 
