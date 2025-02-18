@@ -3,7 +3,7 @@ services:
     name: forex-signals-backend
     env: node
     rootDir: backend    # This tells Render to look in the backend directory
-    buildCommand: npm install && npm run build
+    buildCommand: npm install && rm -rf dist && npm run build
     startCommand: npm start
     envVars:
       - key: MONGODB_URI
