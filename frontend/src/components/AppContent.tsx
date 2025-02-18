@@ -22,6 +22,7 @@ import {
   Check
 } from 'lucide-react';
 import CountrySelector from './CountrySelector';
+import logoImage from '../assets/FB-removebg.png';
 
 interface Course {
   id: number;
@@ -152,7 +153,7 @@ const AppContent: React.FC<AppContentProps> = ({
           <div className="flex justify-between items-center md:justify-center relative">
             <div className="flex items-center space-x-2 md:absolute md:left-0 py-2">
               <img 
-                src="/FB-removebg.png" 
+                src="https://forexbhidu.netlify.app/FB-removebg.png"
                 alt="Forex BHIDU" 
                 className="h-24 md:h-32 w-[220px] md:w-[380px] object-contain"
               />
@@ -857,7 +858,7 @@ const AppContent: React.FC<AppContentProps> = ({
             <div>
               <div className="flex items-center space-x-2 mb-6">
                 <img 
-                  src="/FB-removebg.png" 
+                  src="https://forexbhidu.netlify.app/FB-removebg.png"
                   alt="Forex BHIDU" 
                   className="h-52 w-[450px] object-contain"
                 />
