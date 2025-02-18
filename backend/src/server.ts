@@ -1,6 +1,6 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import cors from 'cors';
+import cors, { CorsOptions } from 'cors';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -29,7 +29,7 @@ app.use(helmet());
 app.use(mongoSanitize());
 
 // CORS configuration
-app.use(cors({
+const corsOptions: CorsOptions = {
   origin: function(origin, callback) {
     const allowedOrigins = [
       'http://localhost:5173',
@@ -50,7 +50,9 @@ app.use(cors({
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
-}));
+};
+
+app.use(cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({
