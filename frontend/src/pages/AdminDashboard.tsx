@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Mail, Package, LogOut, Search, Calendar, RefreshCw } from 'lucide-react';
+import { Users, Mail, Package, LogOut, Search, Calendar, RefreshCw, Download } from 'lucide-react';
 
 interface Contact {
   _id: string;
@@ -76,6 +76,48 @@ const AdminDashboard = () => {
     reg.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const downloadCSV = (data: any[], filename: string) => {
+    // Convert data to CSV format
+    const headers = Object.keys(data[0]).join(',');
+    const rows = data.map(item => Object.values(item).join(','));
+    const csv = [headers, ...rows].join('\n');
+
+    // Create blob and download
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${filename}_${new Date().toLocaleDateString()}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadContacts = () => {
+    const formattedContacts = contacts.map(contact => ({
+      Name: contact.name,
+      Email: contact.email,
+      Phone: contact.phone,
+      Message: contact.message,
+      'Submitted On': new Date(contact.createdAt).toLocaleString()
+    }));
+    downloadCSV(formattedContacts, 'contacts');
+  };
+
+  const handleDownloadRegistrations = () => {
+    const formattedRegistrations = registrations.map(reg => ({
+      Name: reg.name,
+      Email: reg.email,
+      Phone: reg.phone,
+      Country: reg.country,
+      'Package Title': reg.packTitle,
+      'Package Price': reg.packPrice,
+      'Registered On': new Date(reg.createdAt).toLocaleString()
+    }));
+    downloadCSV(formattedRegistrations, 'registrations');
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#13161C] text-white flex items-center justify-center">
@@ -92,7 +134,7 @@ const AdminDashboard = () => {
           <h1 className="text-2xl font-bold">Admin Dashboard</h1>
           <button
             onClick={handleLogout}
-            className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors"
+            className="flex items-center space-x-2 text-gray-400 hover:text-[#DFFF88] transition-colors"
           >
             <LogOut className="w-5 h-5" />
             <span>Logout</span>
@@ -104,23 +146,23 @@ const AdminDashboard = () => {
       <div className="p-6">
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-[#1A1D23] p-6 rounded-lg border border-gray-800">
+          <div className="bg-[#1A1D23] p-6 rounded-lg border border-[#DFFF88]/20 hover:border-[#DFFF88]/40 transition-colors">
             <div className="flex items-center space-x-3">
-              <Users className="w-6 h-6 text-blue-500" />
+              <Users className="w-6 h-6 text-[#DFFF88]" />
               <h2 className="text-lg font-semibold">Total Contacts</h2>
             </div>
             <p className="text-3xl font-bold mt-4">{contacts.length}</p>
           </div>
-          <div className="bg-[#1A1D23] p-6 rounded-lg border border-gray-800">
+          <div className="bg-[#1A1D23] p-6 rounded-lg border border-[#DFFF88]/20 hover:border-[#DFFF88]/40 transition-colors">
             <div className="flex items-center space-x-3">
-              <Package className="w-6 h-6 text-green-500" />
+              <Package className="w-6 h-6 text-[#DFFF88]" />
               <h2 className="text-lg font-semibold">Total Registrations</h2>
             </div>
             <p className="text-3xl font-bold mt-4">{registrations.length}</p>
           </div>
-          <div className="bg-[#1A1D23] p-6 rounded-lg border border-gray-800">
+          <div className="bg-[#1A1D23] p-6 rounded-lg border border-[#DFFF88]/20 hover:border-[#DFFF88]/40 transition-colors">
             <div className="flex items-center space-x-3">
-              <Calendar className="w-6 h-6 text-purple-500" />
+              <Calendar className="w-6 h-6 text-[#DFFF88]" />
               <h2 className="text-lg font-semibold">Today's Date</h2>
             </div>
             <p className="text-xl font-bold mt-4">{new Date().toLocaleDateString()}</p>
@@ -134,8 +176,8 @@ const AdminDashboard = () => {
               onClick={() => setActiveTab('contacts')}
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
                 activeTab === 'contacts'
-                  ? 'bg-blue-500 text-white'
-                  : 'bg-[#1A1D23] text-gray-400 hover:text-white'
+                  ? 'bg-[#DFFF88] text-black'
+                  : 'bg-[#1A1D23] text-gray-400 hover:text-[#DFFF88]'
               }`}
             >
               <Mail className="w-5 h-5" />
@@ -145,12 +187,21 @@ const AdminDashboard = () => {
               onClick={() => setActiveTab('registrations')}
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
                 activeTab === 'registrations'
-                  ? 'bg-green-500 text-white'
-                  : 'bg-[#1A1D23] text-gray-400 hover:text-white'
+                  ? 'bg-[#DFFF88] text-black'
+                  : 'bg-[#1A1D23] text-gray-400 hover:text-[#DFFF88]'
               }`}
             >
               <Package className="w-5 h-5" />
               <span>Registrations</span>
+            </button>
+            {/* Download Button */}
+            <button
+              onClick={activeTab === 'contacts' ? handleDownloadContacts : handleDownloadRegistrations}
+              className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-[#1A1D23] text-gray-400 hover:text-[#DFFF88] hover:border-[#DFFF88]/40 transition-colors border border-gray-800"
+              title={`Download ${activeTab} as CSV`}
+            >
+              <Download className="w-5 h-5" />
+              <span>Download</span>
             </button>
           </div>
           <div className="relative w-full md:w-64">
@@ -160,27 +211,27 @@ const AdminDashboard = () => {
               placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-[#1A1D23] border border-gray-800 rounded-lg focus:outline-none focus:border-blue-500"
+              className="w-full pl-10 pr-4 py-2 bg-[#1A1D23] border border-gray-800 rounded-lg focus:outline-none focus:border-[#DFFF88] focus:ring-1 focus:ring-[#DFFF88]/50"
             />
           </div>
         </div>
 
         {/* Data Table */}
-        <div className="bg-[#1A1D23] rounded-lg border border-gray-800 overflow-x-auto">
+        <div className="bg-[#1A1D23] rounded-lg border border-[#DFFF88]/20 overflow-x-auto">
           {activeTab === 'contacts' ? (
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-800">
-                  <th className="px-6 py-3 text-left">Name</th>
-                  <th className="px-6 py-3 text-left">Email</th>
-                  <th className="px-6 py-3 text-left">Phone</th>
-                  <th className="px-6 py-3 text-left">Message</th>
-                  <th className="px-6 py-3 text-left">Date</th>
+                  <th className="px-6 py-3 text-left text-[#DFFF88]">Name</th>
+                  <th className="px-6 py-3 text-left text-[#DFFF88]">Email</th>
+                  <th className="px-6 py-3 text-left text-[#DFFF88]">Phone</th>
+                  <th className="px-6 py-3 text-left text-[#DFFF88]">Message</th>
+                  <th className="px-6 py-3 text-left text-[#DFFF88]">Date</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredContacts.map((contact) => (
-                  <tr key={contact._id} className="border-b border-gray-800 hover:bg-[#2A2D33]">
+                  <tr key={contact._id} className="border-b border-gray-800 hover:bg-[#DFFF88]/5">
                     <td className="px-6 py-4">{contact.name}</td>
                     <td className="px-6 py-4">{contact.email}</td>
                     <td className="px-6 py-4">{contact.phone}</td>
@@ -196,18 +247,18 @@ const AdminDashboard = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-800">
-                  <th className="px-6 py-3 text-left">Name</th>
-                  <th className="px-6 py-3 text-left">Email</th>
-                  <th className="px-6 py-3 text-left">Phone</th>
-                  <th className="px-6 py-3 text-left">Country</th>
-                  <th className="px-6 py-3 text-left">Package</th>
-                  <th className="px-6 py-3 text-left">Price</th>
-                  <th className="px-6 py-3 text-left">Date</th>
+                  <th className="px-6 py-3 text-left text-[#DFFF88]">Name</th>
+                  <th className="px-6 py-3 text-left text-[#DFFF88]">Email</th>
+                  <th className="px-6 py-3 text-left text-[#DFFF88]">Phone</th>
+                  <th className="px-6 py-3 text-left text-[#DFFF88]">Country</th>
+                  <th className="px-6 py-3 text-left text-[#DFFF88]">Package</th>
+                  <th className="px-6 py-3 text-left text-[#DFFF88]">Price</th>
+                  <th className="px-6 py-3 text-left text-[#DFFF88]">Date</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredRegistrations.map((reg) => (
-                  <tr key={reg._id} className="border-b border-gray-800 hover:bg-[#2A2D33]">
+                  <tr key={reg._id} className="border-b border-gray-800 hover:bg-[#DFFF88]/5">
                     <td className="px-6 py-4">{reg.name}</td>
                     <td className="px-6 py-4">{reg.email}</td>
                     <td className="px-6 py-4">{reg.phone}</td>
