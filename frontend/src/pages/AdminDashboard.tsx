@@ -1,15 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Mail, Package, LogOut, Search, Calendar, RefreshCw, Phone, Download } from 'lucide-react';
-
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  phone: string;
-  country: string;
-  createdAt: string;
-}
+import { Users, Mail, Package, LogOut, Search, Calendar, RefreshCw } from 'lucide-react';
 
 interface Contact {
   _id: string;
@@ -32,50 +23,12 @@ interface Registration {
 }
 
 const AdminDashboard = () => {
-  const [users, setUsers] = useState<User[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [activeTab, setActiveTab] = useState('contacts');
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [error, setError] = useState('');
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        console.log('Fetching users...'); // Debug log
-        const token = localStorage.getItem('adminToken');
-        
-        if (!token) {
-          navigate('/admin');
-          return;
-        }
-
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/users`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        console.log('Response status:', response.status); // Debug log
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch users');
-        }
-
-        const data = await response.json();
-        console.log('Users data:', data); // Debug log
-        
-        setUsers(data.data);
-      } catch (error) {
-        console.error('Error:', error);
-        setError(error instanceof Error ? error.message : 'Failed to fetch users');
-      }
-    };
-
-    fetchUsers();
-  }, [navigate]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -94,13 +47,9 @@ const AdminDashboard = () => {
         });
 
         const data = await res.json();
-        console.log('Dashboard data:', data); // Debug log
-
         if (data.success) {
           setContacts(data.contacts || []);
           setRegistrations(data.registrations || []);
-        } else {
-          console.error('Failed to fetch dashboard data:', data.message);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -127,80 +76,153 @@ const AdminDashboard = () => {
     reg.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const downloadCSV = (data: any[], filename: string) => {
-    // Convert data to CSV format
-    const headers = Object.keys(data[0]).join(',');
-    const rows = data.map(item => Object.values(item).join(','));
-    const csv = [headers, ...rows].join('\n');
-
-    // Create blob and download
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${filename}_${new Date().toLocaleDateString()}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-  };
-
-  const handleDownloadContacts = () => {
-    const formattedContacts = contacts.map(contact => ({
-      Name: contact.name,
-      Email: contact.email,
-      Phone: contact.phone,
-      Message: contact.message,
-      'Submitted On': new Date(contact.createdAt).toLocaleString()
-    }));
-    downloadCSV(formattedContacts, 'contacts');
-  };
-
-  const handleDownloadRegistrations = () => {
-    const formattedRegistrations = registrations.map(reg => ({
-      Name: reg.name,
-      Email: reg.email,
-      Phone: reg.phone,
-      Country: reg.country,
-      'Package Title': reg.packTitle,
-      'Package Price': reg.packPrice,
-      'Registered On': new Date(reg.createdAt).toLocaleString()
-    }));
-    downloadCSV(formattedRegistrations, 'registrations');
-  };
-
-  if (isLoading) return <div className="text-center p-4">Loading...</div>;
-  if (error) return <div className="text-center text-red-500 p-4">{error}</div>;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#13161C] text-white flex items-center justify-center">
+        <RefreshCw className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#13161C] text-white p-8">
-      <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
-      
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-[#1A1D23] rounded-lg">
-          <thead>
-            <tr className="border-b border-gray-700">
-              <th className="px-6 py-3 text-left">Name</th>
-              <th className="px-6 py-3 text-left">Email</th>
-              <th className="px-6 py-3 text-left">Phone</th>
-              <th className="px-6 py-3 text-left">Country</th>
-              <th className="px-6 py-3 text-left">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user._id} className="border-b border-gray-700 hover:bg-[#2A2D33]">
-                <td className="px-6 py-4">{user.name}</td>
-                <td className="px-6 py-4">{user.email}</td>
-                <td className="px-6 py-4">{user.phone}</td>
-                <td className="px-6 py-4">{user.country}</td>
-                <td className="px-6 py-4">
-                  {new Date(user.createdAt).toLocaleDateString()}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="min-h-screen bg-[#13161C] text-white">
+      {/* Header */}
+      <header className="bg-[#1A1D23] border-b border-gray-800 px-6 py-4">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+          <button
+            onClick={handleLogout}
+            className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors"
+          >
+            <LogOut className="w-5 h-5" />
+            <span>Logout</span>
+          </button>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="p-6">
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-[#1A1D23] p-6 rounded-lg border border-gray-800">
+            <div className="flex items-center space-x-3">
+              <Users className="w-6 h-6 text-blue-500" />
+              <h2 className="text-lg font-semibold">Total Contacts</h2>
+            </div>
+            <p className="text-3xl font-bold mt-4">{contacts.length}</p>
+          </div>
+          <div className="bg-[#1A1D23] p-6 rounded-lg border border-gray-800">
+            <div className="flex items-center space-x-3">
+              <Package className="w-6 h-6 text-green-500" />
+              <h2 className="text-lg font-semibold">Total Registrations</h2>
+            </div>
+            <p className="text-3xl font-bold mt-4">{registrations.length}</p>
+          </div>
+          <div className="bg-[#1A1D23] p-6 rounded-lg border border-gray-800">
+            <div className="flex items-center space-x-3">
+              <Calendar className="w-6 h-6 text-purple-500" />
+              <h2 className="text-lg font-semibold">Today's Date</h2>
+            </div>
+            <p className="text-xl font-bold mt-4">{new Date().toLocaleDateString()}</p>
+          </div>
+        </div>
+
+        {/* Tabs and Search */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
+          <div className="flex space-x-4">
+            <button
+              onClick={() => setActiveTab('contacts')}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                activeTab === 'contacts'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-[#1A1D23] text-gray-400 hover:text-white'
+              }`}
+            >
+              <Mail className="w-5 h-5" />
+              <span>Contacts</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('registrations')}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                activeTab === 'registrations'
+                  ? 'bg-green-500 text-white'
+                  : 'bg-[#1A1D23] text-gray-400 hover:text-white'
+              }`}
+            >
+              <Package className="w-5 h-5" />
+              <span>Registrations</span>
+            </button>
+          </div>
+          <div className="relative w-full md:w-64">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-[#1A1D23] border border-gray-800 rounded-lg focus:outline-none focus:border-blue-500"
+            />
+          </div>
+        </div>
+
+        {/* Data Table */}
+        <div className="bg-[#1A1D23] rounded-lg border border-gray-800 overflow-x-auto">
+          {activeTab === 'contacts' ? (
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-800">
+                  <th className="px-6 py-3 text-left">Name</th>
+                  <th className="px-6 py-3 text-left">Email</th>
+                  <th className="px-6 py-3 text-left">Phone</th>
+                  <th className="px-6 py-3 text-left">Message</th>
+                  <th className="px-6 py-3 text-left">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredContacts.map((contact) => (
+                  <tr key={contact._id} className="border-b border-gray-800 hover:bg-[#2A2D33]">
+                    <td className="px-6 py-4">{contact.name}</td>
+                    <td className="px-6 py-4">{contact.email}</td>
+                    <td className="px-6 py-4">{contact.phone}</td>
+                    <td className="px-6 py-4">{contact.message}</td>
+                    <td className="px-6 py-4">
+                      {new Date(contact.createdAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-800">
+                  <th className="px-6 py-3 text-left">Name</th>
+                  <th className="px-6 py-3 text-left">Email</th>
+                  <th className="px-6 py-3 text-left">Phone</th>
+                  <th className="px-6 py-3 text-left">Country</th>
+                  <th className="px-6 py-3 text-left">Package</th>
+                  <th className="px-6 py-3 text-left">Price</th>
+                  <th className="px-6 py-3 text-left">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredRegistrations.map((reg) => (
+                  <tr key={reg._id} className="border-b border-gray-800 hover:bg-[#2A2D33]">
+                    <td className="px-6 py-4">{reg.name}</td>
+                    <td className="px-6 py-4">{reg.email}</td>
+                    <td className="px-6 py-4">{reg.phone}</td>
+                    <td className="px-6 py-4">{reg.country}</td>
+                    <td className="px-6 py-4">{reg.packTitle}</td>
+                    <td className="px-6 py-4">{reg.packPrice}</td>
+                    <td className="px-6 py-4">
+                      {new Date(reg.createdAt).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
     </div>
   );
