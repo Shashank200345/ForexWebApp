@@ -33,7 +33,7 @@ const corsOptions: CorsOptions = {
   origin: [
     'http://localhost:5173',
     'http://localhost:3000',
-    'https://forexbhidu.netlify.app',  // Add your actual Netlify domain
+    'https://forexbhidu.netlify.app',  // Your Netlify URL
     'https://forexwebapp-backend.onrender.com'
   ],
   credentials: true,
