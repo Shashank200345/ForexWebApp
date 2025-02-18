@@ -84,4 +84,25 @@ export const getDashboardData = async (req: Request, res: Response) => {
       message: 'Server error' 
     });
   }
+};
+
+// Get all users endpoint
+export const getAllUsers = async (req: Request, res: Response) => {
+  try {
+    console.log('Fetching all users...'); // Debug log
+    const users = await Contact.find({}).sort({ createdAt: -1 });
+    console.log('Users found:', users.length); // Debug log
+    
+    res.status(200).json({
+      success: true,
+      data: users
+    });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching users',
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
 }; 

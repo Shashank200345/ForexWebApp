@@ -1,6 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Mail, Package, LogOut, Search, Calendar, RefreshCw, Phone, Download } from 'lucide-react';
+
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  phone: string;
+  country: string;
+  createdAt: string;
+}
 
 interface Contact {
   _id: string;
@@ -23,12 +32,50 @@ interface Registration {
 }
 
 const AdminDashboard = () => {
+  const [users, setUsers] = useState<User[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [activeTab, setActiveTab] = useState('contacts');
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        console.log('Fetching users...'); // Debug log
+        const token = localStorage.getItem('adminToken');
+        
+        if (!token) {
+          navigate('/admin');
+          return;
+        }
+
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/users`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        console.log('Response status:', response.status); // Debug log
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch users');
+        }
+
+        const data = await response.json();
+        console.log('Users data:', data); // Debug log
+        
+        setUsers(data.data);
+      } catch (error) {
+        console.error('Error:', error);
+        setError(error instanceof Error ? error.message : 'Failed to fetch users');
+      }
+    };
+
+    fetchUsers();
+  }, [navigate]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,9 +87,9 @@ const AdminDashboard = () => {
           return;
         }
 
-        const res = await fetch('http://localhost:5000/api/admin/dashboard', {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/dashboard`, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            'Authorization': `Bearer ${token}`,
           },
         });
 
@@ -122,196 +169,39 @@ const AdminDashboard = () => {
     downloadCSV(formattedRegistrations, 'registrations');
   };
 
+  if (isLoading) return <div className="text-center p-4">Loading...</div>;
+  if (error) return <div className="text-center text-red-500 p-4">{error}</div>;
+
   return (
-    <div className="min-h-screen bg-[#13161C]">
-      {/* Header */}
-      <header className="bg-[#1A1D23] border-b border-[#2A2F3C]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-white">Admin Dashboard</h1>
-            <button
-              onClick={handleLogout}
-              className="flex items-center px-4 py-2 text-sm text-[#8A95A3] hover:text-white transition-colors"
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Logout
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-[#1A1D23] border border-[#2A2F3C] rounded-lg p-6">
-            <div className="flex items-center">
-              <div className="p-3 bg-blue-500/10 rounded-lg">
-                <Users className="w-6 h-6 text-blue-500" />
-              </div>
-              <div className="ml-4">
-                <p className="text-[#8A95A3] text-sm">Total Contacts</p>
-                <p className="text-white text-2xl font-bold">{contacts.length}</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-[#1A1D23] border border-[#2A2F3C] rounded-lg p-6">
-            <div className="flex items-center">
-              <div className="p-3 bg-green-500/10 rounded-lg">
-                <Package className="w-6 h-6 text-green-500" />
-              </div>
-              <div className="ml-4">
-                <p className="text-[#8A95A3] text-sm">Total Registrations</p>
-                <p className="text-white text-2xl font-bold">{registrations.length}</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-[#1A1D23] border border-[#2A2F3C] rounded-lg p-6">
-            <div className="flex items-center">
-              <div className="p-3 bg-[#DFFF88]/10 rounded-lg">
-                <Calendar className="w-6 h-6 text-[#DFFF88]" />
-              </div>
-              <div className="ml-4">
-                <p className="text-[#8A95A3] text-sm">Today's Date</p>
-                <p className="text-white text-2xl font-bold">
-                  {new Date().toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Search and Download Section */}
-        <div className="bg-[#1A1D23] border border-[#2A2F3C] rounded-lg mb-8">
-          <div className="p-4 border-b border-[#2A2F3C] flex justify-between items-center">
-            <div className="relative flex-1 mr-4">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#4A5260] w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search by name or email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-[#13161C] border border-[#2A2F3C] rounded-lg text-white placeholder-[#4A5260] focus:outline-none focus:ring-2 focus:ring-[#DFFF88] focus:border-transparent"
-              />
-            </div>
-
-            <button
-              onClick={activeTab === 'contacts' ? handleDownloadContacts : handleDownloadRegistrations}
-              className="flex items-center px-4 py-2 bg-[#DFFF88]/10 text-[#DFFF88] rounded-lg hover:bg-[#DFFF88]/20 transition-colors"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Download {activeTab === 'contacts' ? 'Contacts' : 'Registrations'}
-            </button>
-          </div>
-
-          {/* Tabs */}
-          <div className="flex border-b border-[#2A2F3C]">
-            <button
-              className={`flex-1 px-4 py-3 text-sm font-medium ${
-                activeTab === 'contacts'
-                  ? 'text-[#DFFF88] border-b-2 border-[#DFFF88]'
-                  : 'text-[#8A95A3] hover:text-white'
-              }`}
-              onClick={() => setActiveTab('contacts')}
-            >
-              <Mail className="w-4 h-4 inline-block mr-2" />
-              Contacts
-            </button>
-            <button
-              className={`flex-1 px-4 py-3 text-sm font-medium ${
-                activeTab === 'registrations'
-                  ? 'text-[#DFFF88] border-b-2 border-[#DFFF88]'
-                  : 'text-[#8A95A3] hover:text-white'
-              }`}
-              onClick={() => setActiveTab('registrations')}
-            >
-              <Package className="w-4 h-4 inline-block mr-2" />
-              Registrations
-            </button>
-          </div>
-
-          {/* Content */}
-          <div className="p-4">
-            {isLoading ? (
-              <div className="flex justify-center items-center py-12">
-                <RefreshCw className="w-6 h-6 text-[#DFFF88] animate-spin" />
-              </div>
-            ) : activeTab === 'contacts' ? (
-              <div className="space-y-4">
-                {filteredContacts.map((contact) => (
-                  <div
-                    key={contact._id}
-                    className="bg-[#13161C] border border-[#2A2F3C] rounded-lg p-4 hover:border-[#DFFF88]/50 transition-colors"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-white font-medium">{contact.name}</h3>
-                        <p className="text-[#8A95A3] text-sm">{contact.email}</p>
-                        <p className="text-[#8A95A3] text-sm">{contact.phone}</p>
-                        <p className="text-white mt-2">{contact.message}</p>
-                      </div>
-                      <span className="text-[#4A5260] text-sm">
-                        {new Date(contact.createdAt).toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              filteredRegistrations.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-[#8A95A3]">No registrations found</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {filteredRegistrations.map((registration) => (
-                    <div
-                      key={registration._id}
-                      className="bg-[#13161C] border border-[#2A2F3C] rounded-lg p-4 hover:border-[#DFFF88]/50 transition-colors"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="flex items-center space-x-3">
-                            <h3 className="text-white font-medium">{registration.name}</h3>
-                            <span className="px-2 py-1 text-xs rounded-full bg-[#2A2F3C] text-[#8A95A3]">
-                              {registration.country}
-                            </span>
-                          </div>
-                          <div className="mt-2 space-y-1">
-                            <p className="text-[#8A95A3] text-sm flex items-center">
-                              <Mail className="w-4 h-4 mr-2 text-[#4A5260]" />
-                              {registration.email}
-                            </p>
-                            <p className="text-[#8A95A3] text-sm flex items-center">
-                              <Phone className="w-4 h-4 mr-2 text-[#4A5260]" />
-                              {registration.phone}
-                            </p>
-                          </div>
-                          <div className="mt-3 flex items-center">
-                            <div className="px-3 py-1.5 rounded-lg bg-[#DFFF88]/10 border border-[#DFFF88]/20">
-                              <p className="text-[#DFFF88] text-sm font-medium">
-                                {registration.packTitle}
-                                <span className="ml-2 text-[#8A95A3]">
-                                  {registration.packPrice}
-                                </span>
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-[#4A5260] text-sm">
-                            {new Date(registration.createdAt).toLocaleString()}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )
-            )}
-          </div>
-        </div>
-      </main>
+    <div className="min-h-screen bg-[#13161C] text-white p-8">
+      <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
+      
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-[#1A1D23] rounded-lg">
+          <thead>
+            <tr className="border-b border-gray-700">
+              <th className="px-6 py-3 text-left">Name</th>
+              <th className="px-6 py-3 text-left">Email</th>
+              <th className="px-6 py-3 text-left">Phone</th>
+              <th className="px-6 py-3 text-left">Country</th>
+              <th className="px-6 py-3 text-left">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((user) => (
+              <tr key={user._id} className="border-b border-gray-700 hover:bg-[#2A2D33]">
+                <td className="px-6 py-4">{user.name}</td>
+                <td className="px-6 py-4">{user.email}</td>
+                <td className="px-6 py-4">{user.phone}</td>
+                <td className="px-6 py-4">{user.country}</td>
+                <td className="px-6 py-4">
+                  {new Date(user.createdAt).toLocaleDateString()}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
