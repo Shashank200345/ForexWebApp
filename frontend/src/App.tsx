@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import AppContent from './components/AppContent';
 import SignalPackDetails from './pages/SignalPackDetails';
 import AdminLogin from './pages/AdminLogin';
@@ -49,22 +49,24 @@ const courses = [
 
 function App() {
   return (
-    <Routes>
-      <Route 
-        path="/" 
-        element={
-          <AppContent
-            courses={courses}
-          />
-        }
-      />
-      <Route
-        path="/signal-pack/:id"
-        element={<SignalPackDetails courses={courses} />}
-      />
-      <Route path="/admin" element={<AdminLogin />} />
-      <Route path="/admin/dashboard" element={<AdminDashboard />} />
-    </Routes>
+    <BrowserRouter>
+      <Routes>
+        <Route 
+          path="/" 
+          element={
+            <AppContent
+              courses={courses}
+            />
+          }
+        />
+        <Route
+          path="/signal-pack/:id"
+          element={<SignalPackDetails courses={courses} />}
+        />
+        <Route path="/admin" element={<AdminLogin />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
