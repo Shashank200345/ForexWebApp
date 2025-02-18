@@ -5,7 +5,7 @@ import Contact from '../models/Contact';
 import Registration from '../models/Registration';
 
 // Admin login
-export const login = async (req: Request, res: Response) => {
+export const adminLogin = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
     console.log('Login attempt:', { username });

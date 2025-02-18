@@ -1,6 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
+// Add this interface to extend Request
+interface AuthRequest extends Request {
+  user?: any;  // Add user property
+}
+
 export const protect = async (req: Request, res: Response, next: NextFunction) => {
   let token;
 
@@ -20,7 +25,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
   }
 };
 
-export const authenticateAdmin = async (req: Request, res: Response, next: NextFunction) => {
+export const authenticateAdmin = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization;
     
@@ -41,7 +46,7 @@ export const authenticateAdmin = async (req: Request, res: Response, next: NextF
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    req.user = decoded;
+    req.user = decoded;  // Now TypeScript knows about user property
     next();
   } catch (error) {
     console.error('Auth error:', error);
