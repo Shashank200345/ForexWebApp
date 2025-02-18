@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import LiveMarket from './LiveMarket';
 import { 
@@ -120,6 +120,29 @@ const AppContent: React.FC<AppContentProps> = ({
       });
     }
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        console.log('Attempting to fetch data...');
+        console.log('API URL:', import.meta.env.VITE_API_URL);
+        
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/test`);
+        console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Data received:', data);
+      } catch (error) {
+        console.error('Fetch error:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#13161C] text-white">
