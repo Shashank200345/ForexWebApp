@@ -250,23 +250,6 @@ const AppContent: React.FC<AppContentProps> = ({
                 />
               </a>
               <a 
-                href="#services" 
-                className="relative group hover:text-[#DFFF88] transition-colors"
-                onClick={(e) => {
-                  e.preventDefault();
-                  const element = document.getElementById('services');
-                  if (element) {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }
-                }}
-              >
-                Services 
-                <span className="absolute -bottom-1 left-0 w-0 h-[2px] bg-gradient-to-r from-[#DFFF88]/40 via-[#DFFF88] to-[#DFFF88]/40 
-                  group-hover:w-full transition-all duration-300 ease-out
-                  shadow-[0_0_10px_rgba(223,255,136,0.5)] opacity-0 group-hover:opacity-100" 
-                />
-              </a>
-              <a 
                 href="#about" 
                 className="relative group hover:text-[#DFFF88] transition-colors"
                 onClick={(e) => {
@@ -362,20 +345,6 @@ const AppContent: React.FC<AppContentProps> = ({
                 }}
               >
                 Features
-              </a>
-              <a 
-                href="#services" 
-                className="text-lg text-white hover:text-[#DFFF88] transition-colors w-full text-center py-2"
-                onClick={(e) => {
-                  e.preventDefault();
-                  const element = document.getElementById('services');
-                  if (element) {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }
-                  setIsMenuOpen(false);
-                }}
-              >
-                Services
               </a>
               <a 
                 href="#about" 
@@ -624,51 +593,6 @@ const AppContent: React.FC<AppContentProps> = ({
         </div>
       </section>
 
-      {/* Services Section */}
-      <section id="services" className="py-20 bg-[#13161C]">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-20">
-            <h2 className="text-4xl font-bold text-white mb-4">Our Services</h2>
-            <p className="text-[#8A95A3] max-w-2xl mx-auto">
-              Choose from our range of specialized signal packages designed to meet your trading needs
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {courses.map((course) => (
-              <div
-                key={course.id}
-                className="relative bg-[#1A1D23] rounded-2xl p-8 hover:transform hover:scale-[1.02] transition-all duration-300"
-              >
-                {course.popular && (
-                  <div className="absolute -top-4 right-4 bg-black text-[#DFFF88] px-4 py-1 rounded-full text-sm">
-                    Popular
-                  </div>
-                )}
-                <h3 className="text-2xl font-bold text-white mb-4">{course.title}</h3>
-                <div className="flex items-baseline mb-8">
-                  <span className="text-4xl font-bold text-white">{course.price}</span>
-                  <span className="text-[#8A95A3] ml-2">Quarterly</span>
-                </div>
-                <ul className="space-y-4 mb-8">
-                  {course.features.map((feature, index) => (
-                    <li key={index} className="flex items-start">
-                      <Check className="w-5 h-5 mr-3 text-[#DFFF88] mt-1 flex-shrink-0" />
-                      <span className="text-[#8A95A3]">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  onClick={() => navigate(`/signal-pack/${course.id}`)}
-                  className="w-full py-4 rounded-lg bg-[#DFFF88] text-black font-semibold hover:bg-[#DFFF88]/90 transition-colors"
-                >
-                  Learn More
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Trading Account Section */}
       <section className="py-20 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#13161C] via-[#13161C]/90 to-[#4D4D4D]/20"></div>
@@ -716,107 +640,6 @@ const AppContent: React.FC<AppContentProps> = ({
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto px-6 max-w-7xl">
-          <h2 className="text-4xl font-bold text-center mb-4">
-            What Our <span className="text-[#DFFF88]">Traders Say</span>
-          </h2>
-          <p className="text-[#8A95A3] text-center mb-16 max-w-2xl mx-auto">
-            Join thousands of successful traders who have transformed their trading journey with FOREXBHIDU
-          </p>
-          
-          <div className="grid md:grid-cols-3 gap-8 group">
-            {[
-              {
-                name: "Sarah Chen",
-                role: "Professional Trader",
-                image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=150&h=150&q=80",
-                quote: "Forex Bhidu's analytical tools and educational resources have been instrumental in my trading success. The platform is intuitive and powerful.",
-                rating: 5
-              },
-              {
-                name: "Marcus Rodriguez",
-                role: "Investment Analyst",
-                image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&h=150&q=80",
-                quote: "The real-time market data and advanced charting capabilities have completely transformed how I analyze trading opportunities.",
-                rating: 5
-              },
-              {
-                name: "Emma Thompson",
-                role: "Crypto Investor",
-                image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&h=150&q=80",
-                quote: "As a crypto trader, I appreciate the comprehensive coverage of digital assets and the seamless integration of multiple markets.",
-                rating: 5
-              }
-            ].map((testimonial, index) => (
-              <div 
-                key={index} 
-                className={`bg-[#4D4D4D] p-8 rounded-lg relative 
-                  transition-all duration-500 ease-out
-                  group-hover:blur-sm hover:!blur-none hover:scale-105 hover:z-10
-                  hover:transform hover:-translate-y-4
-                  hover:shadow-[0_20px_50px_rgba(223,255,136,0.15)]
-                  before:absolute before:inset-0
-                  after:absolute after:inset-0
-                  isolate
-                  overflow-hidden
-                  ${index === 0 ? 'animate-float-slow' : 
-                    index === 1 ? 'animate-float-normal' : 
-                    'animate-float-medium'}
-                `}
-              >
-                {/* Moving glowing border effect - Top */}
-                <div className="absolute top-0 left-0 w-[100%] h-[2px] bg-gradient-to-r from-transparent via-[#DFFF88] to-transparent
-                  animate-[moveRight_3s_linear_infinite] opacity-70 group-hover:opacity-100 group-hover:shadow-[0_0_10px_#DFFF88]" />
-                
-                {/* Moving glowing border effect - Right */}
-                <div className="absolute top-0 right-0 w-[2px] h-[100%] bg-gradient-to-b from-transparent via-[#DFFF88] to-transparent
-                  animate-[moveDown_3s_linear_infinite] opacity-70 group-hover:opacity-100 group-hover:shadow-[0_0_10px_#DFFF88]" />
-                
-                {/* Moving glowing border effect - Bottom */}
-                <div className="absolute bottom-0 right-0 w-[100%] h-[2px] bg-gradient-to-l from-transparent via-[#DFFF88] to-transparent
-                  animate-[moveLeft_3s_linear_infinite] opacity-70 group-hover:opacity-100 group-hover:shadow-[0_0_10px_#DFFF88]" />
-                
-                {/* Moving glowing border effect - Left */}
-                <div className="absolute bottom-0 left-0 w-[2px] h-[100%] bg-gradient-to-t from-transparent via-[#DFFF88] to-transparent
-                  animate-[moveUp_3s_linear_infinite] opacity-70 group-hover:opacity-100 group-hover:shadow-[0_0_10px_#DFFF88]" />
-
-                {/* Content */}
-                <div className="relative z-10">
-                  <div className="flex items-center mb-6">
-                    <img 
-                      src={testimonial.image} 
-                      alt={testimonial.name}
-                      className="w-16 h-16 rounded-full mr-4 object-cover ring-2 ring-[#DFFF88]/20 
-                        group-hover:ring-[#DFFF88]/40 group-hover:scale-110 transition-all duration-500"
-                    />
-                    <div>
-                      <h3 className="font-bold text-white group-hover:text-[#DFFF88] transition-colors">
-                        {testimonial.name}
-                      </h3>
-                      <p className="text-[#8A95A3] text-sm">{testimonial.role}</p>
-                    </div>
-                  </div>
-                  <div className="flex mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        className="w-5 h-5 text-[#DFFF88] fill-[#DFFF88] group-hover:animate-pulse
-                          group-hover:scale-110 transition-transform duration-500" 
-                      />
-                    ))}
-                  </div>
-                  <p className="text-[#8A95A3] group-hover:text-[#8A95A3]/90 transition-colors">
-                    {testimonial.quote}
-                  </p>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -969,9 +792,6 @@ const AppContent: React.FC<AppContentProps> = ({
               <ul className="space-y-4">
                 <li>
                   <a href="#" className="text-[#8A95A3] hover:text-[#DFFF88] transition-colors">About Us</a>
-                </li>
-                <li>
-                  <a href="#" className="text-[#8A95A3] hover:text-[#DFFF88] transition-colors">Our Services</a>
                 </li>
                 <li>
                   <a href="#" className="text-[#8A95A3] hover:text-[#DFFF88] transition-colors">Market Analysis</a>
